@@ -15,8 +15,8 @@ const path = d3.geoPath().projection(projection);
 const colorScale = d3.scaleSequential(d3.interpolateReds);
 
 Promise.all([
-    d3.json("regions.geojson"),
-    d3.csv("filtered_data_no_france.csv")
+    d3.json("./regions.geojson"),
+    d3.csv("./filtered_data_no_france.csv")
 ]).then(([geojson, data]) => {
     // Region-to-department mapping
     const regionMapping = {
