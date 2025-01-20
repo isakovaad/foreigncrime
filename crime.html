@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crime Data Visualization in French Regions</title>
+    <link rel="stylesheet" href="crime.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header>
+        <h3>Crime in France</h3>
+        <p>Search for a city to see crime statistics</p>    
+    </header>
+
+    <main>
+        <div id="main-map-container">
+            <select id="crimeTypeSelector"></select>
+            <svg id="choropleth" width="1000" height="800"></svg>
+        </div>
+        <div id="region-maps" class="region-maps-container"></div>
+    </main>
+
+    <script src="crime.js"></script>
+</body>
+</html>
