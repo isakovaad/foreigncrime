@@ -5,21 +5,174 @@
     <title>Crime Data Visualization in French Regions</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Load FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        #info-boxes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: absolute;
+            right: 20px;
+            top: 50px;
+            background-color: #ffe4d9;
+            padding: 10px;
+            border: 2px solid #99000d;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-right: 30px;
+            margin-top: 160px;
+            width: 480px;
+            height: 570px;
+        }
+
+        .info-box {
+            width: 475px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffe4d9;
+            border: 1px solid #99000d;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .info-box:hover {
+            background-color: #ffdab9;
+        }
+
+        #choropleth {
+            position: relative;
+        }
+
+        #color-scheme {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .color-box {
+            width: 30px;
+            height: 20px;
+        }
+
+        #selector-container {
+            display: flex;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h3>Crime in France</h3>
-        <p>Search for a city to see crime statistics</p>    
+        <h1>Discover Safe Regions for Your Internship or Travel in France</h1>
+        <h2>Search for a region or zip code to see crime statistics</h2>   
+        <h4>Click on a region!</h4> 
     </header>
 
     <main>
         <div id="main-map-container">
-            <select id="crimeTypeSelector"></select>
+            <div id="selector-container">
+                <select id="crimeTypeSelector"></select>
+                <div id="color-scheme">
+                    <div class="color-box" style="background-color: #fff5f0;"></div>
+                    <div class="color-box" style="background-color: #fee0d2;"></div>
+                    <div class="color-box" style="background-color: #fcbba1;"></div>
+                    <div class="color-box" style="background-color: #fc9272;"></div>
+                    <div class="color-box" style="background-color: #fb6a4a;"></div>
+                    <div class="color-box" style="background-color: #ef3b2c;"></div>
+                    <div class="color-box" style="background-color: #cb181d;"></div>
+                    <div class="color-box" style="background-color: #99000d;"></div>
+                    <span class="color-label low">Less Crime</span>
+                    <span class="color-label high">More Crime</span>
+                </div>
+            </div>
             <svg id="choropleth" width="1000" height="800"></svg>
+            <div id="info-boxes">
+                <div class="info-box" id="what-box">What?</div>
+                <p>Our visualizations provide crime statistics by region in France, helping users make informed decisions about safety for travel, internships, or relocation.</p>
+                <div class="info-box" id="why-box">Why?</div>
+                <p>Understanding crime rates ensures personal safety and helps users select regions that meet their safety needs.</p>
+                <div class="info-box" id="who-box">Who?</div>
+                <p>Students, travelers, professionals adn families seeking detailed insights into regional crime trends to plan their moves wisely.</p>
+                <div class="info-box" id="how-box">How?</div>
+                <p>Interactive maps and charts visualize crime types and frequencies, allowing users to explore and compare regions easily.</p>
+            </div>
         </div>
+        <h4>Click on a zip code!</h4>
         <div id="region-maps" class="region-maps-container"></div>
     </main>
 
+    <div id="searchContainer">
+        <label for="regionSearch" class="large-label">Manually Search a Region:</label>
+        <input type="text" id="regionSearch" list="regionSuggestions" placeholder="Search for a region">
+        <datalist id="regionSuggestions"></datalist>
+        <button id="searchButton">Search</button>
+    </div>
+    <h2 id="pie-chart-title" class="pie-chart-title">French Crime Distribution</h2>
+    <h3 id="currentRegion" class="current-region">Currently Showing: <span id="regionName"></span></h3>
+    <div id="chartContainer">
+        <div id="pie" class="responsive-svg-container"></div>
+        <div id="legend"></div>
+    </div>
+
+    <div id="extraChartsContainer">
+        <!-- France -->
+        <div class="small-chart-wrapper">
+            <div id="franceLegend" class="legend left-legend"></div>
+            <div class="small-chart-container">
+                <div id="francePie" class="responsive-svg-container small-pie"></div>
+            </div>
+        </div>
+        <!-- Île-de-France -->
+        <div class="small-chart-wrapper">
+            <div class="small-chart-container">
+                <div id="ileDeFrancePie" class="responsive-svg-container small-pie"></div>
+            </div>
+            <div id="idfLegend" class="legend right-legend"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Which Region has more crime?</h1>
+        <h2>Rate per 1000 inhabitants (1 icon = 1 case per 1000 people)</h2>
+
+        <div class="selection-container">
+            <label for="region1">Select First Region:</label>
+            <select id="region1"></select>
+
+            <label for="region2">Select Second Region:</label>
+            <select id="region2"></select>
+
+            <button id="updateButton">Compare</button>
+        </div>
+
+        <div id="pictographChart"></div>
+    </div>
+
+    <!-- Data Source Information -->
+    <footer class="data-source">
+        <p>
+            The database of chronological series of the Ministerial Statistical Service for Internal Security 
+            (<a href="https://www.interieur.gouv.fr/Interstats/Le-SSMSI/A-propos-du-SSMSI" target="_blank">SSMSI</a>) 
+            references several thousand monthly, quarterly, annual, national, departmental statistical indicators 
+            relating to the areas monitored by the service: crimes, offenses, contraventions, complaint rates, 
+            feeling of insecurity, etc. For each indicator, in addition to its values, the database provides 
+            information in particular on its source, its periodicity, its unit of account, and its definition, 
+            supplemented by a link to an associated publication directly downloadable from the 
+            <a href="https://www.interieur.gouv.fr/Interstats/Publications" target="_blank">SSMSI website</a>.
+        </p>
+        <p>
+            The most recent download of the dataset we made was on November 2, 2024, at 3:11:10 PM. 
+            At the time, the data was last updated on October 16th, 2024.
+        </p>
+    </footer>
+
     <script src="script.js" defer></script>
+    <script src="script_pie.js" defer></script>
+    <script src="pictograph.js" defer></script>
 </body>
 </html>
